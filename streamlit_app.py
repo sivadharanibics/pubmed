@@ -1,151 +1,341 @@
+# import streamlit as st
+# import httpx
+
+# st.set_page_config(page_title="🧠 Medical Chatbot", layout="centered")
+# st.markdown("<h1 style='text-align: center;'>💬 PubMed Chatbot</h1>", unsafe_allow_html=True)
+
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
+
+# if "last_response" not in st.session_state:
+#     st.session_state.last_response = {}
+
+# # ⬆️ Chat input at top
+# with st.container():
+#     prompt = st.chat_input("Ask your question from PubMed...")
+
+# # Tabs for chat & references
+# tab1, tab2 = st.tabs(["💬 Chat", "📚 References"])
+
+# with tab1:
+#     # Show previous messages
+#     for msg in st.session_state.messages:
+#         with st.chat_message(msg["role"]):
+#             st.markdown(msg["content"], unsafe_allow_html=True)
+
+#     # Process input if any
+#     if prompt:
+#         st.session_state.messages.append({"role": "user", "content": prompt})
+#         with st.chat_message("user"):
+#             st.markdown(prompt)
+
+#         with st.chat_message("assistant"):
+#             with st.spinner("🔍 Searching..."):
+#                 try:
+#                     response = httpx.get(
+#                         "http://127.0.0.1:8000/api/summarize",
+#                         params={"q": prompt},
+#                         headers={"accept": "application/json"},
+#                         timeout=200.0
+#                     )
+#                     response.raise_for_status()
+#                     data = response.json()
+
+#                     summary = data.get("summary", "No summary available.")
+#                     references = data.get("Reference_links", [])
+
+#                     # Save last result for reference tab
+#                     st.session_state.last_response = {
+#                         "summary": summary,
+#                         "references": references
+#                     }
+
+#                     # Show summary
+#                     st.markdown("### 📝 Summary")
+#                     st.markdown(summary)
+
+#                     # Append to chat history
+#                     st.session_state.messages.append({
+#                         "role": "assistant",
+#                         "content": f"### 📝 Summary\n{summary}\n\n📚 {len(references)} reference(s) listed."
+#                     })
+
+#                 except Exception as e:
+#                     st.error(f"❌ Failed to fetch: {e}")
+#                     st.session_state.messages.append({
+#                         "role": "assistant",
+#                         "content": f"❌ Error: {e}"
+#                     })
+
+# with tab2:
+#     references = st.session_state.last_response.get("references", [])
+#     if references:
+#         st.markdown("### 📚 All References")
+#         for i, ref in enumerate(references, 1):
+#             title = ref.get("title", f"Reference {i}")
+#             abstract = ref.get("abstract", "No abstract available.")
+#             links = []
+
+#             # Collect links
+#             if "link" in ref:
+#                 links.append(ref["link"])
+#             if "reference" in ref:
+#                 links += [
+#                     {"link": r.get("link"), "Name": r.get("Reference")}
+#                     for r in ref["reference"] if r.get("link")
+#                 ]
+
+#             with st.expander(f"{i}. {title}"):
+#                 st.markdown(f"**🧾 Abstract:** {abstract}")
+#                 if links:
+#                     for j in links:
+#                         if isinstance(j, str):
+#                             st.markdown(f"🔗 [Link]({j})")
+#                         else:
+#                             st.markdown(f"🔗 [{j['Name']}]({j['link']})")
+#                 else:
+#                     st.markdown("🔗 No links available.")
+#     else:
+#         st.info("No references to display yet. Ask something in the Chat tab.")
+
+
+# import streamlit as st
+# import httpx
+
+# st.set_page_config(page_title="🔍 PubMed Search Engine", layout="centered")
+# st.markdown("<h1 style='text-align: center;'>🔍 PubMed Search Engine</h1>", unsafe_allow_html=True)
+
+# # Initialize session state variables only once
+# if "messages" not in st.session_state:
+#     st.session_state.messages = []
+
+# if "last_response" not in st.session_state:
+#     st.session_state.last_response = {}
+
+# if "last_prompt" not in st.session_state:
+#     st.session_state.last_prompt = None
+
+# # Chat input stays on top
+# with st.container():
+#      user_input = st.chat_input("Ask your question from PubMed...")
+
+# # Tabs for Chat and References
+# tab1, tab2 = st.tabs(["💬 Chat", "📚 References"])
+
+# with tab1:
+#     # Show previous messages
+#     for msg in st.session_state.messages:
+#         with st.chat_message(msg["role"]):
+#             st.markdown(msg["content"], unsafe_allow_html=True)
+
+#     # Handle new user input only if changed
+#     if user_input and user_input != st.session_state.last_prompt:
+#         st.session_state.last_prompt = user_input
+#         st.session_state.messages.append({"role": "user", "content": user_input})
+#         with st.chat_message("user"):
+#             st.markdown(user_input)
+
+#         with st.chat_message("assistant"):
+#             with st.spinner("🔍 Searching..."):
+#                 try:
+#                     response = httpx.get(
+#                         "http://127.0.0.1:8000/api/summarize",
+#                         params={"UserQuery": user_input},
+#                         headers={"accept": "application/json"},
+#                         timeout=200.0
+#                     )
+#                     response.raise_for_status()
+#                     data = response.json()
+
+#                     summary = data.get("summary", "No summary available.")
+#                     references = data.get("Reference_links", [])
+
+#                     # Save data for references tab
+#                     st.session_state.last_response = {
+#                         "summary": summary,
+#                         "references": references
+#                     }
+
+#                     # Display summary
+#                     st.markdown("### 📝 Summary")
+#                     st.markdown(summary)
+
+#                     # Add to chat history
+#                     st.session_state.messages.append({
+#                         "role": "assistant",
+#                         "content": f"### 📝 Summary\n{summary}\n\n📚 {len(references)} reference(s) listed."
+#                     })
+
+#                 except Exception as e:
+#                     st.error(f"❌ Failed to fetch: {e}")
+#                     st.session_state.messages.append({
+#                         "role": "assistant",
+#                         "content": f"❌ Error: {e}"
+#                     })
+
+# with tab2:
+#     references = st.session_state.last_response.get("references", [])
+#     if references:
+#         st.markdown("### 📚 All References")
+#         for i, ref in enumerate(references, 1):
+#             title = ref.get("title", f"Reference {i}")
+#             abstract = ref.get("abstract", "No abstract available.")
+#             links = []
+
+#             # Collect all link formats
+#             if "link" in ref:
+#                 links.append(ref["link"])
+#             if "reference" in ref:
+#                 links += [
+#                     {"link": r.get("link"), "Name": r.get("Reference")}
+#                     for r in ref["reference"] if r.get("link")
+#                 ]
+
+#             with st.expander(f"{i}. {title}"):
+#                 st.markdown(f"**🧾 Abstract:** {abstract}")
+#                 if links:
+#                     for j in links:
+#                         if isinstance(j, str):
+#                             st.markdown(f"🔗 [Link]({j})")
+#                         else:
+#                             st.markdown(f"🔗 [{j['Name']}]({j['link']})")
+#                 else:
+#                     st.markdown("🔗 No links available.")
+#     else:
+#         st.info("No references to display yet. Ask something in the Chat tab.")
+
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
+import httpx
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+# Configure page
+st.set_page_config(page_title="🔍 PubMed Search Engine", layout="centered")
+st.markdown("<h1 style='text-align: center;'>🔍 PubMed Search Engine</h1>", unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# Initialize session state variables
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "last_response" not in st.session_state:
+    st.session_state.last_response = {}
+if "last_prompt" not in st.session_state:
+    st.session_state.last_prompt = None
+if "search_count" not in st.session_state:
+    st.session_state.search_count = 0
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# Chat input stays on top
+with st.container():
+    user_input = st.chat_input("Ask your question from PubMed...")
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+# Handle new user input
+if user_input and user_input != st.session_state.last_prompt:
+    # Clear previous results if this is a new search
+    if st.session_state.search_count > 0:
+        st.session_state.messages = []
+    
+    st.session_state.last_prompt = user_input
+    st.session_state.search_count += 1
+    
+    # Add user message to history
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+    # Process the query
+    with st.spinner("🔍 Searching PubMed..."):
+        try:
+            response = httpx.get(
+                "http://127.0.0.1:8000/api/summarize",
+                # "http://127.0.0.1:8000/api/summarize/test",
+                params={"UserQuery": user_input},
+                headers={"accept": "application/json"},
+                timeout=200.0
+            )
+            response.raise_for_status()
+            data = response.json()
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+            summary = data.get("summary", "No summary available.")
+            references = data.get("Reference_links", [])
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+            # Save data for references tab
+            st.session_state.last_response = {
+                "summary": summary,
+                "references": references
+            }
+            # Add assistant response to history
+            if data.get("Status")==404:
+               st.session_state.messages.append({
+                "role": "assistant",
+                "content": f"### No Article's Found \n{summary}\n\n📚 {len(references)} reference(s) found."
+                })
+            else:
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": f"### 📝 Summary\n{summary}\n\n📚 {len(references)} reference(s) found."
+                })
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+        except Exception as e:
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": f"❌ Error: Failed to fetch results - {str(e)}"
+            })
 
-    return gdp_df
+# Tabs for Chat and References
+tab1, tab2 = st.tabs(["ALL", "📚 References"])
 
-gdp_df = get_gdp_data()
+with tab1:
+    # Display current conversation (only showing the current search)
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"], unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+with tab2:
+    references = st.session_state.last_response.get("references", [])
+    if references:
+        st.markdown("### 📚 Articles Found")
+        st.markdown(f"Showing references for: *{st.session_state.last_prompt}*")
+        
+        for i, ref in enumerate(references, 1):
+            title = ref.get("title", f"Reference {i}")
+            abstract = ref.get("abstract", "No abstract available.")
+            links = []
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+            # Collect all link formats
+            # if "link" in ref:
+            #     links.append({"link":ref["link"],"Name":"PubMed Link"})
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+            # if "Similar_articles" in ref:
+            #     links += [{"link":ref["Similar_articles"],"Name" : "Similar articles"}]
+            if "reference" in ref:
+                links += [
+                    {"link": r.get("link"), "Name": r.get("Reference")}
+                    for r in ref["reference"] if r.get("link")
+                ]
+            
 
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
+            with st.expander(f"{i}. {title}"):
+                st.markdown(f"📅 **Published:** `{ref['published_date']}` | 🔄 **Updated:** `{ref['last_updated']}`")
+                st.markdown(f"**Abstract:** {abstract}")
+                authors = ref.get("author", [])
+                if authors:
+                   author_list = ", ".join(authors)
+                   st.markdown(f"**👨‍🔬 Authors:** {author_list}")
+                   if "link" in ref:
+                       st.link_button("🔗 PubMed Link", ref["link"])
+                   if "Similar_articles" in ref:
+                       st.link_button("🧬 Similar Articles", ref["Similar_articles"])
+                # if links:
+                #     st.markdown("**Links:**")
+                #     for j in links:
+                #         # if isinstance(j, str):
+                #         #     st.markdown(f"- [PubMed Link]({j})")
+                #         # else:
+                #         st.markdown(f"- [{j['Name']}]({j['link']})")
+                if links:
+                    with st.expander("🔗 References"):
+                        for j in links:
+                            # st.markdown(f"- [{j['Name']}]({j['link']})")
+                            st.link_button(f"{j['Name']}", f"{j['link']}")
+                else:
+                    st.markdown("No links available for this reference.")
+    else:
+        if st.session_state.last_prompt:
+            st.info("No references found for your last query.")
         else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+            st.info("Submit a query in the Chat tab to see references here.")
