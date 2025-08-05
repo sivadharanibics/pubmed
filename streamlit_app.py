@@ -1,211 +1,24 @@
-# import streamlit as st
-# import httpx
-
-# st.set_page_config(page_title="🧠 Medical Chatbot", layout="centered")
-# st.markdown("<h1 style='text-align: center;'>💬 PubMed Chatbot</h1>", unsafe_allow_html=True)
-
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
-
-# if "last_response" not in st.session_state:
-#     st.session_state.last_response = {}
-
-# # ⬆️ Chat input at top
-# with st.container():
-#     prompt = st.chat_input("Ask your question from PubMed...")
-
-# # Tabs for chat & references
-# tab1, tab2 = st.tabs(["💬 Chat", "📚 References"])
-
-# with tab1:
-#     # Show previous messages
-#     for msg in st.session_state.messages:
-#         with st.chat_message(msg["role"]):
-#             st.markdown(msg["content"], unsafe_allow_html=True)
-
-#     # Process input if any
-#     if prompt:
-#         st.session_state.messages.append({"role": "user", "content": prompt})
-#         with st.chat_message("user"):
-#             st.markdown(prompt)
-
-#         with st.chat_message("assistant"):
-#             with st.spinner("🔍 Searching..."):
-#                 try:
-#                     response = httpx.get(
-#                         "http://127.0.0.1:8000/api/summarize",
-#                         params={"q": prompt},
-#                         headers={"accept": "application/json"},
-#                         timeout=200.0
-#                     )
-#                     response.raise_for_status()
-#                     data = response.json()
-
-#                     summary = data.get("summary", "No summary available.")
-#                     references = data.get("Reference_links", [])
-
-#                     # Save last result for reference tab
-#                     st.session_state.last_response = {
-#                         "summary": summary,
-#                         "references": references
-#                     }
-
-#                     # Show summary
-#                     st.markdown("### 📝 Summary")
-#                     st.markdown(summary)
-
-#                     # Append to chat history
-#                     st.session_state.messages.append({
-#                         "role": "assistant",
-#                         "content": f"### 📝 Summary\n{summary}\n\n📚 {len(references)} reference(s) listed."
-#                     })
-
-#                 except Exception as e:
-#                     st.error(f"❌ Failed to fetch: {e}")
-#                     st.session_state.messages.append({
-#                         "role": "assistant",
-#                         "content": f"❌ Error: {e}"
-#                     })
-
-# with tab2:
-#     references = st.session_state.last_response.get("references", [])
-#     if references:
-#         st.markdown("### 📚 All References")
-#         for i, ref in enumerate(references, 1):
-#             title = ref.get("title", f"Reference {i}")
-#             abstract = ref.get("abstract", "No abstract available.")
-#             links = []
-
-#             # Collect links
-#             if "link" in ref:
-#                 links.append(ref["link"])
-#             if "reference" in ref:
-#                 links += [
-#                     {"link": r.get("link"), "Name": r.get("Reference")}
-#                     for r in ref["reference"] if r.get("link")
-#                 ]
-
-#             with st.expander(f"{i}. {title}"):
-#                 st.markdown(f"**🧾 Abstract:** {abstract}")
-#                 if links:
-#                     for j in links:
-#                         if isinstance(j, str):
-#                             st.markdown(f"🔗 [Link]({j})")
-#                         else:
-#                             st.markdown(f"🔗 [{j['Name']}]({j['link']})")
-#                 else:
-#                     st.markdown("🔗 No links available.")
-#     else:
-#         st.info("No references to display yet. Ask something in the Chat tab.")
-
-
-# import streamlit as st
-# import httpx
-
-# st.set_page_config(page_title="🔍 PubMed Search Engine", layout="centered")
-# st.markdown("<h1 style='text-align: center;'>🔍 PubMed Search Engine</h1>", unsafe_allow_html=True)
-
-# # Initialize session state variables only once
-# if "messages" not in st.session_state:
-#     st.session_state.messages = []
-
-# if "last_response" not in st.session_state:
-#     st.session_state.last_response = {}
-
-# if "last_prompt" not in st.session_state:
-#     st.session_state.last_prompt = None
-
-# # Chat input stays on top
-# with st.container():
-#      user_input = st.chat_input("Ask your question from PubMed...")
-
-# # Tabs for Chat and References
-# tab1, tab2 = st.tabs(["💬 Chat", "📚 References"])
-
-# with tab1:
-#     # Show previous messages
-#     for msg in st.session_state.messages:
-#         with st.chat_message(msg["role"]):
-#             st.markdown(msg["content"], unsafe_allow_html=True)
-
-#     # Handle new user input only if changed
-#     if user_input and user_input != st.session_state.last_prompt:
-#         st.session_state.last_prompt = user_input
-#         st.session_state.messages.append({"role": "user", "content": user_input})
-#         with st.chat_message("user"):
-#             st.markdown(user_input)
-
-#         with st.chat_message("assistant"):
-#             with st.spinner("🔍 Searching..."):
-#                 try:
-#                     response = httpx.get(
-#                         "http://127.0.0.1:8000/api/summarize",
-#                         params={"UserQuery": user_input},
-#                         headers={"accept": "application/json"},
-#                         timeout=200.0
-#                     )
-#                     response.raise_for_status()
-#                     data = response.json()
-
-#                     summary = data.get("summary", "No summary available.")
-#                     references = data.get("Reference_links", [])
-
-#                     # Save data for references tab
-#                     st.session_state.last_response = {
-#                         "summary": summary,
-#                         "references": references
-#                     }
-
-#                     # Display summary
-#                     st.markdown("### 📝 Summary")
-#                     st.markdown(summary)
-
-#                     # Add to chat history
-#                     st.session_state.messages.append({
-#                         "role": "assistant",
-#                         "content": f"### 📝 Summary\n{summary}\n\n📚 {len(references)} reference(s) listed."
-#                     })
-
-#                 except Exception as e:
-#                     st.error(f"❌ Failed to fetch: {e}")
-#                     st.session_state.messages.append({
-#                         "role": "assistant",
-#                         "content": f"❌ Error: {e}"
-#                     })
-
-# with tab2:
-#     references = st.session_state.last_response.get("references", [])
-#     if references:
-#         st.markdown("### 📚 All References")
-#         for i, ref in enumerate(references, 1):
-#             title = ref.get("title", f"Reference {i}")
-#             abstract = ref.get("abstract", "No abstract available.")
-#             links = []
-
-#             # Collect all link formats
-#             if "link" in ref:
-#                 links.append(ref["link"])
-#             if "reference" in ref:
-#                 links += [
-#                     {"link": r.get("link"), "Name": r.get("Reference")}
-#                     for r in ref["reference"] if r.get("link")
-#                 ]
-
-#             with st.expander(f"{i}. {title}"):
-#                 st.markdown(f"**🧾 Abstract:** {abstract}")
-#                 if links:
-#                     for j in links:
-#                         if isinstance(j, str):
-#                             st.markdown(f"🔗 [Link]({j})")
-#                         else:
-#                             st.markdown(f"🔗 [{j['Name']}]({j['link']})")
-#                 else:
-#                     st.markdown("🔗 No links available.")
-#     else:
-#         st.info("No references to display yet. Ask something in the Chat tab.")
-
 import streamlit as st
 import httpx
+
+custom_css = """
+<style>
+    .stLogo.st-emotion-cache-auzihx.eu6y2f96 {
+        /* Add your custom styles here */
+    height: 4rem;
+    margin-top: 2.25rem;
+    margin-bottom: 0.25rem;
+    margin-left: -1px;
+        /* etc. */
+    }
+</style>
+"""
+
+# Inject the CSS
+st.markdown(custom_css, unsafe_allow_html=True)
+# Display the logo with a custom width
+# st.image("https://bitsglobal.in/assets/img/bics_logo.png", width=200)
+st.logo("https://bitsglobal.in/assets/img/bics_logo.png", size="large")
 
 # Configure page
 st.set_page_config(page_title="🔍 PubMed Search Engine", layout="centered")
@@ -241,11 +54,12 @@ if user_input and user_input != st.session_state.last_prompt:
     with st.spinner("🔍 Searching PubMed..."):
         try:
             response = httpx.get(
-                "http://127.0.0.1:8000/api/summarize",
+                "https://garudaapigw.bicsglobal.com:9444/api/summarize",
                 # "http://127.0.0.1:8000/api/summarize/test",
                 params={"UserQuery": user_input},
                 headers={"accept": "application/json"},
-                timeout=200.0
+                timeout=200.0,
+                verify=False
             )
             response.raise_for_status()
             data = response.json()
